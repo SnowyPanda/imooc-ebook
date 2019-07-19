@@ -102,9 +102,9 @@ export default {
       // 隐藏标题栏和菜单栏
       this.ifTitleAndMenuShow = false
       // 隐藏设置栏
-      this.$refs.manuBar.hideSetting()
+      this.$refs.menubar.hideSetting()
       // 隐藏目录
-      this.$refs.menuBar.hideContent()
+      this.$refs.menubar.hideContent()
     },
     // 进度条
     onProgressChange (progress) {

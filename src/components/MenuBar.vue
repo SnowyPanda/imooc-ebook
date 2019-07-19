@@ -3,7 +3,7 @@
         <transition name="slide-up">
             <div class="menu-wrapper" v-show="ifTitleAndMenuShow" :class="{'hide-box-shadow':ifSettingShow || !ifTitleAndMenuShow}">
                 <div class="icon-wrapper">
-                <span class="icon-menu iconfont icon"></span>
+                <span class="icon-menu iconfont icon" @click="showSetting(3)"></span>
                 </div>
                 <div class="icon-wrapper">
                 <span class="icon-progress iconfont icon" @click="showSetting(2)"></span>
@@ -57,15 +57,23 @@
                 </div>
             </div>
         </transition>
+        <content-view :ifShowContent="ifShowContent"
+                      v-show="ifShowContent"
+                      :navigation="navigation"
+                      :bookAvailable="bookAvailable"
+                      @jumpTo="jumpTo"></content-view>
         <transition name="fade">
-          <div class="content-mask" v-show="ifShowContent"></div>
-
+          <div class="content-mask" v-show="ifShowContent" @click="hideContent()"></div>
         </transition>
       </div>
 </template>
 
 <script>
+import ContentView from '@/components/ContentView'
 export default {
+  components: {
+    ContentView
+  },
   props: {
     ifTitleAndMenuShow: {
       type: Boolean,
@@ -78,18 +86,25 @@ export default {
     bookAvailable: {
       type: Boolean,
       default: false
-    }
+    },
+    navigation: Array
   },
   data () {
     return {
       ifSettingShow: false,
       showTag: 0,
-      progress: 0
+      progress: 0,
+      ifShowContent: false
     }
   },
   methods: {
     showSetting (tag) {
-      this.ifSettingShow = true
+      if (tag === 3) {
+        this.ifSettingShow = false
+        this.ifShowContent = true
+      } else {
+        this.ifSettingShow = true
+      }
       this.showTag = tag
     },
     hideSetting () {
@@ -108,6 +123,12 @@ export default {
     },
     onProgressChange (progress) {
       this.$emit('onProgressChange', progress)
+    },
+    hideContent () {
+      this.ifShowContent = false
+    },
+    jumpTo (link) {
+      this.$emit('jumpTo', link)
     }
   }
 }
@@ -289,6 +310,16 @@ export default {
             @include center;
           }
         }
+    }
+    .content-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 101;
+      display: flex;
+      width: 100%;
+      height: 100%;
+      background: rgba(51,51,51,.8);
     }
 }
 </style>
