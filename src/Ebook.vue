@@ -14,7 +14,11 @@
         :defaultFontSize="defaultFontSize"
         :themeList="themeList"
         :defaultTheme="defaultTheme"
+        :bookAvailable="bookAvailable"
+        @onProgressChange="onProgressChange"
         @setTheme="setTheme"
+        @jumpTo="jumpTo"
+        :navigation="navigation"
         ref="menubar"
         @setFontSize="setFontSize">
     </menu-bar>
@@ -25,7 +29,7 @@
 import TitleBar from '@/components/TitleBar'
 import MenuBar from '@/components/MenuBar'
 import Epub from 'epubjs'
-const DOWNLOAD_URL = '/static/40510.epub'
+const DOWNLOAD_URL = '/static/江南 - 九州·缥缈录Ⅲ：天下名将.epub'
 global.epub = Epub
 export default {
   components: {
@@ -83,10 +87,31 @@ export default {
           }
         }
       ],
-      defaultTheme: 0
+      defaultTheme: 0,
+      // 图书是否处于可用状态
+      bookAvailable: false
     }
   },
   methods: {
+    // 目录跳转
+    jumpTo(href) {
+      this.rendition.display(href)
+      this.hideTitleAndMenu()
+    },
+    hideTitleAndMenu () {
+      // 隐藏标题栏和菜单栏
+      this.ifTitleAndMenuShow = false
+      // 隐藏设置栏
+      this.$refs.manuBar.hideSetting()
+      // 隐藏目录
+      this.$refs.menuBar.hideContent()
+    },
+    // 进度条
+    onProgressChange (progress) {
+      const percentage = progress / 100
+      const location = percentage > 0 ? this.locations.cfiFromPercentage(percentage) : 0
+      this.rendition.display(location)
+    },
     setTheme (index) {
       this.themes.select(this.themeList[index].name)
       this.defaultTheme = index
@@ -141,6 +166,18 @@ export default {
       // this.themes.select(name)
       this.registerTheme()
       this.setTheme(this.defaultTheme)
+      // 获取location对象
+      // 通过epubjs的钩子函数来实现
+      // Book对象的钩子函数ready
+      this.book.ready.then(() => {
+        // 生成Locations对象
+        this.navigation = this.book.navigation
+        return this.book.locations.generate()
+      }).then(result => {
+        // 保存locations对象
+        this.locations = this.book.locations
+        this.bookAvailable = true
+      })
     }
   },
   mounted () {

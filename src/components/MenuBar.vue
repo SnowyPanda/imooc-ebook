@@ -6,7 +6,7 @@
                 <span class="icon-menu iconfont icon"></span>
                 </div>
                 <div class="icon-wrapper">
-                <span class="icon-progress iconfont icon"></span>
+                <span class="icon-progress iconfont icon" @click="showSetting(2)"></span>
                 </div>
                 <div class="icon-wrapper">
                 <span class="icon-bright iconfont icon" @click="showSetting(1)"></span>
@@ -42,7 +42,24 @@
                     <div class="text" :class="{'selected': index===defaultTheme}">{{item.name}}</div>
                   </div>
                 </div>
+                <div class="setting-progress" v-else-if="showTag === 2">
+                  <div class="progress-wrapper">
+                    <input type="range" class="progress" max="100" min="0" step="1"
+                                        @change="onProgressChange($event.target.value)"
+                                        @input="onProgressInput($event.target.value)"
+                                        :value="progress"
+                                        :disabled="!bookAvailable"
+                                        ref="progress" />
+                  </div>
+                  <div class="text-wrapper">
+                    <span>{{bookAvailable ? progress + '%' : '加载中...'}}</span>
+                  </div>
+                </div>
             </div>
+        </transition>
+        <transition name="fade">
+          <div class="content-mask" v-show="ifShowContent"></div>
+
         </transition>
       </div>
 </template>
@@ -57,12 +74,17 @@ export default {
     fontSizeList: Array,
     defaultFontSize: Number,
     themeList: Array,
-    defaultTheme: Number
+    defaultTheme: Number,
+    bookAvailable: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
     return {
       ifSettingShow: false,
-      showTag: 0
+      showTag: 0,
+      progress: 0
     }
   },
   methods: {
@@ -78,6 +100,14 @@ export default {
     },
     setTheme (index) {
       this.$emit('setTheme', index)
+    },
+    // 拖动进度条时触发事件
+    onProgressInput (progress) {
+      this.progress = progress
+      this.$refs.progress.style.backgroundSize = `${this.progress}% 100%`
+    },
+    onProgressChange (progress) {
+      this.$emit('onProgressChange', progress)
     }
   }
 }
@@ -217,6 +247,46 @@ export default {
                 color: #333;
               }
             }
+          }
+        }
+        .setting-progress {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          .progress-wrapper {
+            width: 100%;
+            height: 100%;
+            @include center;
+            padding: 0 px2rem(30);
+            box-sizing: border-box;
+            .progress {
+              width: 100%;
+              -webkit-appearance: none;
+              height: px2rem(2);
+              background: -webkit-linear-gradient(#999,#999) no-repeat, #ddd;
+              background-size: 0 100%;
+              &:focus {
+                outline: none;
+              }
+              &::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                height: px2rem(20);
+                width: px2rem(20);
+                border-radius: 50%;
+                background: white;
+                box-shadow: 0 4px 4px rgba(0,0,0,0.15);
+                border: px2rem(1) solid #ddd;
+              }
+            }
+          }
+          .text-wrapper {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            font-size: px2rem(18);
+            color: #666;
+            @include center;
           }
         }
     }
